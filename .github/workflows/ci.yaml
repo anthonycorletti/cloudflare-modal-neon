@@ -1,0 +1,119 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./server
+
+    env:
+      APP_ENV: test
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: install neonctl
+        run: npm i -g neonctl
+
+      - name: set up python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: install
+        run: bin/install-ci
+
+      - name: lint
+        run: bin/check
+
+      - name: run postgres
+        run: |
+          docker run --rm -d --name example-postgres \
+          -p 5432:5432 \
+          -e POSTGRES_PASSWORD=postgres \
+          -e POSTGRES_USER=postgres \
+          -e POSTGRES_DB=example_test \
+          postgres:16.4
+
+      - name: run migrations
+        run: bin/db-migrate
+
+      - name: test
+        run: bin/test
+
+      - name: deploy
+        run: |
+          # TODO this should be cleaner
+
+          # if this is not a pull request, pass
+          if [ -z "${{ github.event.pull_request.head.sha }}" ]; then
+            exit 0
+          fi
+
+          # if this is main, 1) run the ddl and then 2) deploy to production
+          if [ ${{ github.ref }} = 'refs/heads/main' ]; then
+            APP_ENV=production bin/db-migrate
+            APP_ENV=production bin/deploy-modal
+          else
+            # get the name of the head branch
+            head_branch_name=$(echo ${{ github.event.pull_request.head.ref }})
+            # get the name of the base branch
+            base_branch_name=$(echo ${{ github.event.pull_request.base.ref }})
+            echo "head branch name: $head_branch_name"
+            echo "base branch name: $base_branch_name"
+            # create the branch
+            neon branches create --name $head_branch_name --base $base_branch_name --project_id ${{ env.NEON_PROJECT_ID }}
+            # run the ddl
+            APP_ENV=preview bin/db-migrate
+            # deploy to modal
+            APP_ENV=preview bin/deploy-modal
+          fi
+
+  web:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./web
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: apt-get update
+        run: sudo apt-get update -y
+
+      - name: setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: install dependencies
+        run: bun install
+
+      - name: lint
+        run: bun run lint
+
+      - name: run tests
+        run: bun test
+
+      - name: build
+        run: bun run build

@@ -1,5 +1,5 @@
 #!/bin/sh -e
 
 # set the APP_ENV environment variable to production if it is not already set
-uv run modal profile activate feature-media
-APP_ENV=${APP_ENV:-"production"} uv run modal deploy app/_modal.py
+uv run modal profile activate ${PROFILE:-"anthonycorletti"}
+APP_ENV=${APP_ENV:-"preview"} uv run modal deploy app/_modal.py
