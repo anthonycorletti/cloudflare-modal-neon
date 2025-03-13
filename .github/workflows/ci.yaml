@@ -63,28 +63,34 @@ jobs:
         run: |
           # TODO this should be cleaner
 
-          # if this is not a pull request, pass
-          if [ -z "${{ github.event.pull_request.head.sha }}" ]; then
-            exit 0
-          fi
+          # get the name of the head branch
+          head_branch_name=$(echo ${{ github.event.pull_request.head.ref }})
+          # get the name of the base branch
+          base_branch_name=$(echo ${{ github.event.pull_request.base.ref }})
+          echo "head branch name: $head_branch_name"
+          echo "base branch name: $base_branch_name"
+          # create the branch
+          neon branches create --name $head_branch_name --base $base_branch_name --project_id ${{ env.NEON_PROJECT_ID }}
 
           # if this is main, 1) run the ddl and then 2) deploy to production
           if [ ${{ github.ref }} = 'refs/heads/main' ]; then
-            APP_ENV=production bin/db-migrate
-            APP_ENV=production bin/deploy-modal
+            echo "to production"
+            # APP_ENV=production bin/db-migrate
+            # APP_ENV=production bin/deploy-modal
           else
-            # get the name of the head branch
-            head_branch_name=$(echo ${{ github.event.pull_request.head.ref }})
-            # get the name of the base branch
-            base_branch_name=$(echo ${{ github.event.pull_request.base.ref }})
-            echo "head branch name: $head_branch_name"
-            echo "base branch name: $base_branch_name"
-            # create the branch
-            neon branches create --name $head_branch_name --base $base_branch_name --project_id ${{ env.NEON_PROJECT_ID }}
-            # run the ddl
-            APP_ENV=preview bin/db-migrate
-            # deploy to modal
-            APP_ENV=preview bin/deploy-modal
+            echo "to preview"
+            # # get the name of the head branch
+            # head_branch_name=$(echo ${{ github.event.pull_request.head.ref }})
+            # # get the name of the base branch
+            # base_branch_name=$(echo ${{ github.event.pull_request.base.ref }})
+            # echo "head branch name: $head_branch_name"
+            # echo "base branch name: $base_branch_name"
+            # # create the branch
+            # neon branches create --name $head_branch_name --base $base_branch_name --project_id ${{ env.NEON_PROJECT_ID }}
+            # # run the ddl
+            # APP_ENV=preview bin/db-migrate
+            # # deploy to modal
+            # APP_ENV=preview bin/deploy-modal
           fi
 
   web:
