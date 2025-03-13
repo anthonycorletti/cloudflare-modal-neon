@@ -46,11 +46,11 @@ jobs:
 
       - name: run postgres
         run: |
-          docker run --rm -d --name example-postgres \
+          docker run --rm -d --name ci-postgres \
           -p 5432:5432 \
           -e POSTGRES_PASSWORD=postgres \
           -e POSTGRES_USER=postgres \
-          -e POSTGRES_DB=example_test \
+          -e POSTGRES_DB=postgres_test \
           postgres:16.4
 
       - name: run migrations
