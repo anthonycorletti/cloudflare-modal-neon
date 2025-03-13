@@ -1,6 +1,6 @@
 from typing import List, Sequence
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 
 from app.items.schemas import ItemsCreate, ItemsUpdate
 from app.items.service import ItemsService
@@ -42,7 +42,6 @@ async def show_item(
 
 @router.post(Paths.create_item, response_model=Items)
 async def create_item(
-    request: Request,
     items_create: ItemsCreate = Body(
         ..., example=ItemsCreate.Config.json_schema_extra["example"]
     ),
@@ -57,7 +56,6 @@ async def create_item(
 
 @router.put(Paths.update_item, response_model=Items)
 async def update_item(
-    request: Request,
     item_name: str,
     item_update: ItemsUpdate = Body(
         ..., example=ItemsUpdate.Config.json_schema_extra["example"]
