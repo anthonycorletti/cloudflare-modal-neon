@@ -17,11 +17,10 @@ jobs:
 
     env:
       APP_ENV: test
-      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
 
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.12"]
 
     steps:
       - name: checkout
@@ -37,10 +36,6 @@ jobs:
 
       - name: setup bun
         uses: oven-sh/setup-bun@v2
-
-      - name: install neonctl
-        run: |
-          bun install -g neonctl
 
       - name: set up python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
@@ -70,39 +65,39 @@ jobs:
         if: github.event_name == 'pull_request'
         id: branch-names
         run: |
-          echo "::set-output name=current_branch::${{ github.ref_name }}"
-          echo "::set-output name=base_branch::${{ github.base_ref_name }}"
+          echo "head_ref=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+          echo "base_ref=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
 
       - name: create db branch in neon for pull request
         id: create-db-branch
         if: github.event_name == 'pull_request'
         uses: neondatabase/create-branch-action@v5
         with:
-          username: "anthonycorletti" # Change this to the role you use to connect to your database
           api_key: ${{ secrets.NEON_API_KEY }} # Generate an API key in your Neon account settings
-          project_id: ${{ env.NEON_PROJECT_ID }}
-          branch_name: ${{ steps.branch-name.outputs.current_branch }}
-          parent_branch: ${{ steps.branch-name.outputs.base_branch }}
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch_name: ${{ steps.branch-names.outputs.head_ref }}
+          parent: ${{ steps.branch-names.outputs.base_ref }}
 
       - name: run migrations against preview
         if: github.event_name == 'pull_request'
         run: |
-          APP_POSTGRES_PWD=${{ steps.create-db-branch.outputs.password }} APP_POSTGRES_HOST=${{ steps.create-db-branch.outputs.db_host }} APP_ENV=preview bin/db-migrate
+          APP_POSTGRES_PWD=${{ steps.create-db-branch.outputs.password }} APP_POSTGRES_HOST=${{ steps.create-db-branch.outputs.host_with_pooler }} APP_POSTGRES_DATABASE=neondb APP_POSTGRES_USER=neondb_owner APP_ENV=preview bin/db-migrate
 
       - name: deploy to preview
         if: github.event_name == 'pull_request'
         run: |
-          APP_ENV=preview bin/deploy-modal
+          uv run modal token set --token-id ${{ secrets.MODAL_TOKEN_ID }} --token-secret ${{ secrets.MODAL_TOKEN_SECRET }}
+          APP_POSTGRES_PWD=${{ steps.create-db-branch.outputs.password }} APP_POSTGRES_HOST=${{ steps.create-db-branch.outputs.host_with_pooler }} APP_POSTGRES_DATABASE=neondb APP_POSTGRES_USER=neondb_owner APP_ENV=preview MODAL_ENV=${{ steps.branch-names.outputs.head_ref }} bin/deploy-modal
 
-      - name: run migrations against production
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_ENV=production bin/db-migrate
+      # - name: run migrations against production
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   run: |
+      #     APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_ENV=production bin/db-migrate
 
-      - name: deploy to production
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          APP_ENV=production bin/deploy-modal
+      # - name: deploy to production
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   run: |
+      #     APP_ENV=production bin/deploy-modal
 
   web:
     runs-on: ubuntu-latest
@@ -110,6 +105,9 @@ jobs:
     defaults:
       run:
         working-directory: ./web
+
+    env:
+      MODAL_PROFILE: anthonycorletti
 
     steps:
       - name: checkout
@@ -134,3 +132,53 @@ jobs:
 
       - name: build
         run: bun run build
+
+      - name: get api preview url
+        if: github.event_name == 'pull_request'
+        id: api-preview-url
+        run: |
+          echo "head_ref=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+          MODAL_ENV=$(echo "${{ github.head_ref }}" | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+          echo "url=https://${{ env.MODAL_PROFILE }}-${MODAL_ENV}--server.modal.run" >> "$GITHUB_OUTPUT"
+
+      - name: deploy to preview
+        if: github.event_name == 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          bun install -g wrangler
+
+          cat <<EOF > wrangler.toml
+          name = "cloudflare-modal-neon"
+          pages_build_output_dir = "./dist"
+
+          [env.preview.vars]
+          VITE_API_BASE_URL = "${{ steps.api-preview-url.outputs.url }}"
+          EOF
+
+          cat wrangler.toml
+
+          wrangler pages deploy ./dist --project-name=cloudflare-modal-neon \
+            --branch ${{ github.head_ref }} \
+            --commit-hash ${{ github.sha }} \
+            --commit-message ${{ github.event.head_commit.message }}
+
+      - name: deploy to production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          bun install -g wrangler
+
+          cat <<EOF > wrangler.toml
+          name = "cloudflare-modal-neon"
+          pages_build_output_dir = "./dist"
+
+          [env.production.vars]
+          VITE_API_BASE_URL = "https://anthonycorletti-production--server.modal.run"
+          EOF
+
+          wrangler pages deploy ./dist --project-name=cloudflare-modal-neon \
+            --branch ${{ github.head_ref }} \
+            --commit-hash ${{ github.sha }} \
+            --commit-message ${{ github.event.head_commit.message }}

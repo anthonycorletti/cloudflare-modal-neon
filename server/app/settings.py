@@ -60,6 +60,9 @@ class Settings(BaseSettings):
 
     @cached_property
     def postgres_dsn(self) -> str:
+        path = self.POSTGRES_DATABASE
+        if self.is_test() or self.is_local():
+            path += f"_{self.ENV.value}"
         return str(
             PostgresDsn.build(
                 scheme=self.POSTGRES_SCHEME,
@@ -67,7 +70,7 @@ class Settings(BaseSettings):
                 password=self.POSTGRES_PWD,
                 host=self.POSTGRES_HOST,
                 port=self.POSTGRES_PORT,
-                path=self.POSTGRES_DATABASE + f"_{self.ENV.value}",
+                path=path,
             )
         )
 
