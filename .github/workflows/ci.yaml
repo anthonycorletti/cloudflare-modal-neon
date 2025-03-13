@@ -29,11 +29,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: apt-get update
+        run: sudo apt-get update -y
+
       - name: install uv
         uses: astral-sh/setup-uv@v5
 
+      - name: setup bun
+        uses: oven-sh/setup-bun@v2
+
       - name: install neonctl
-        run: npm i -g neonctl
+        run: |
+          bun install -g neonctl
 
       - name: set up python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
@@ -44,7 +51,7 @@ jobs:
       - name: lint
         run: bin/check
 
-      - name: run postgres
+      - name: run postgres container
         run: |
           docker run --rm -d --name ci-postgres \
           -p 5432:5432 \
@@ -53,45 +60,49 @@ jobs:
           -e POSTGRES_DB=postgres_test \
           postgres:16.4
 
-      - name: run migrations
+      - name: run migrations on test database
         run: bin/db-migrate
 
-      - name: test
+      - name: run tests
         run: bin/test
 
-      - name: deploy
+      - name: get branch names
+        if: github.event_name == 'pull_request'
+        id: branch-names
         run: |
-          # TODO this should be cleaner
+          echo "::set-output name=current_branch::${{ github.ref_name }}"
+          echo "::set-output name=base_branch::${{ github.base_ref_name }}"
 
-          # get the name of the head branch
-          head_branch_name=$(echo ${{ github.event.pull_request.head.ref }})
-          # get the name of the base branch
-          base_branch_name=$(echo ${{ github.event.pull_request.base.ref }})
-          echo "head branch name: $head_branch_name"
-          echo "base branch name: $base_branch_name"
-          # create the branch
-          neon branches create --name $head_branch_name --base $base_branch_name --project_id ${{ env.NEON_PROJECT_ID }}
+      - name: create db branch in neon for pull request
+        id: create-db-branch
+        if: github.event_name == 'pull_request'
+        uses: neondatabase/create-branch-action@v5
+        with:
+          username: "anthonycorletti" # Change this to the role you use to connect to your database
+          api_key: ${{ secrets.NEON_API_KEY }} # Generate an API key in your Neon account settings
+          project_id: ${{ env.NEON_PROJECT_ID }}
+          branch_name: ${{ steps.branch-name.outputs.current_branch }}
+          parent_branch: ${{ steps.branch-name.outputs.base_branch }}
 
-          # if this is main, 1) run the ddl and then 2) deploy to production
-          if [ ${{ github.ref }} = 'refs/heads/main' ]; then
-            echo "to production"
-            # APP_ENV=production bin/db-migrate
-            # APP_ENV=production bin/deploy-modal
-          else
-            echo "to preview"
-            # # get the name of the head branch
-            # head_branch_name=$(echo ${{ github.event.pull_request.head.ref }})
-            # # get the name of the base branch
-            # base_branch_name=$(echo ${{ github.event.pull_request.base.ref }})
-            # echo "head branch name: $head_branch_name"
-            # echo "base branch name: $base_branch_name"
-            # # create the branch
-            # neon branches create --name $head_branch_name --base $base_branch_name --project_id ${{ env.NEON_PROJECT_ID }}
-            # # run the ddl
-            # APP_ENV=preview bin/db-migrate
-            # # deploy to modal
-            # APP_ENV=preview bin/deploy-modal
-          fi
+      - name: run migrations against preview
+        if: github.event_name == 'pull_request'
+        run: |
+          APP_POSTGRES_PWD=${{ steps.create-db-branch.outputs.password }} APP_POSTGRES_HOST=${{ steps.create-db-branch.outputs.db_host }} APP_ENV=preview bin/db-migrate
+
+      - name: deploy to preview
+        if: github.event_name == 'pull_request'
+        run: |
+          APP_ENV=preview bin/deploy-modal
+
+      - name: run migrations against production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_ENV=production bin/db-migrate
+
+      - name: deploy to production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          APP_ENV=production bin/deploy-modal
 
   web:
     runs-on: ubuntu-latest
