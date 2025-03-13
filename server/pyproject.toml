@@ -1,0 +1,89 @@
+[project]
+name = "app"
+version = "0.0.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.15.1",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.11",
+    "greenlet>=3.1.1",
+    "itsdangerous>=2.2.0",
+    "modal>=0.73.98",
+    "pydantic>=2.10.6",
+    "pydantic-settings>=2.8.1",
+    "sqlmodel>=0.0.24",
+    "structlog>=25.2.0",
+    "uvicorn>=0.34.0",
+]
+
+
+[dependency-groups]
+dev = [
+    "asgi-lifespan>=2.1.0",
+    "httpx>=0.28.1",
+    "mypy>=1.15.0",
+    "pytest-asyncio>=0.25.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.10",
+]
+
+# ruff
+[tool.ruff]
+line-length = 88
+include = ["*.py"]
+exclude = ["dist", "build", ".venv", "custom_nodes", "tmp"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+pydocstyle = { convention = "google" }
+
+# mypy
+[tool.mypy]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+exclude = ["dist", "build", ".venv", "custom_nodes", "tmp"]
+
+# setuptools
+[tool.setuptools.package-data]
+app = ["py.typed"]
+
+[tool.setuptools.dynamic.version]
+attr = "app.__version__"
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
+# pytest
+[tool.pytest.ini_options]
+addopts = [
+    "-o",
+    "console_output_style=progress",
+    "--asyncio-mode=auto",
+    "--disable-warnings",
+    "--showlocals",
+    "--cov=app",
+    "--cov=tests",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-report=html",
+]
+asyncio_default_fixture_loop_scope = "function"
+norecursedirs = ["tmp"]
+
+# coverage
+[tool.coverage.run]
+parallel = true
+source = ["app", "tests"]
+omit = ["*__init__.py", "app/_modal.py"]
+concurrency = ["thread", "greenlet", "multiprocessing"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"

@@ -1,0 +1,20 @@
+#!/bin/sh -e
+#
+# Run a PostgreSQL database server in a Docker container.
+#
+# Usage: bin/run-postgres
+
+echo "Starting PostgreSQL server..."
+docker run --name=example-postgres -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16.4
+
+# Wait until PostgreSQL is ready to accept connections
+until docker exec -it example-postgres pg_isready -U postgres; do
+  echo "Waiting for PostgreSQL to be ready..."
+  sleep 1
+done
+
+echo "Creating local database..."
+docker exec -it example-postgres psql -U postgres -c 'CREATE database postgres_local'
+
+echo "Creating test database..."
+docker exec -it example-postgres psql -U postgres -c 'CREATE database postgres_test'
