@@ -159,9 +159,9 @@ jobs:
           cat wrangler.toml
 
           wrangler pages deploy ./dist --project-name=cloudflare-modal-neon \
-            --branch ${{ github.head_ref }} \
-            --commit-hash ${{ github.sha }} \
-            --commit-message ${{ github.event.head_commit.message }}
+            --branch "${{ github.head_ref }}" \
+            --commit-hash "${{ github.sha }}" \
+            --commit-message "${{ github.event.head_commit.message }}"
 
       - name: deploy to production
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -179,6 +179,6 @@ jobs:
           EOF
 
           wrangler pages deploy ./dist --project-name=cloudflare-modal-neon \
-            --branch ${{ github.head_ref }} \
-            --commit-hash ${{ github.sha }} \
-            --commit-message ${{ github.event.head_commit.message }}
+            --branch "${{ github.head_ref }}" \
+            --commit-hash "${{ github.sha }}" \
+            --commit-message "${{ github.event.head_commit.message }}"
