@@ -1,5 +1,18 @@
 #!/bin/sh -e
 
 # set the APP_ENV environment variable to production if it is not already set
-uv run modal profile activate ${PROFILE:-"anthonycorletti"}
-APP_ENV=${APP_ENV:-"preview"} uv run modal deploy app/_modal.py
+uv run modal profile activate ${MODAL_PROFILE:-"anthonycorletti"}
+# if modal env is not set, raise an error
+MODAL_ENV=${MODAL_ENV:-""}
+if [ -z "${MODAL_ENV}" ]; then
+  echo "Please set the MODAL_ENV environment variable to the environment you would like to deploy to."
+  exit 1
+fi
+
+# MODAL_ENV Environment names can only start with alphanumeric characters, may contain
+# only alphanumeric characters, dashes, periods, and underscores, and must be
+# shorter than 64 characters.
+MODAL_ENV=$(echo ${MODAL_ENV} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+
+uv run modal environment create ${MODAL_ENV} || true
+APP_ENV=${APP_ENV:-"preview"} uv run modal deploy --env=${MODAL_ENV} app/_modal.py

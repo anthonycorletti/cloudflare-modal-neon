@@ -23,21 +23,22 @@ image = (
     Image.debian_slim()
     .pip_install(["uv"])
     .workdir("/root")
-    .copy_local_file("pyproject.toml", "/root/pyproject.toml")
-    .copy_local_file("uv.lock", "/root/uv.lock")
     .env({"UV_PROJECT_ENVIRONMENT": "/usr/local"})
+    .add_local_file("pyproject.toml", "/root/pyproject.toml", copy=True)
+    .add_local_file("uv.lock", "/root/uv.lock", copy=True)
+    .add_local_python_source("app", copy=True)
     .run_commands(["uv sync --no-dev --frozen --compile-bytecode", "uv build"])
 )
 
 
 @app.function(
-    keep_warm=1,
     cpu=0.5,
     memory=256,
-    container_idle_timeout=30,
     image=image,
-    secrets=[app_env],
     timeout=1800,
+    secrets=[app_env],
+    min_containers=1,
+    scaledown_window=30,
 )
 @asgi_app(label="server")
 def server() -> FastAPI:
