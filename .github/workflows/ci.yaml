@@ -157,19 +157,39 @@ jobs:
       - name: run tests
         run: bun test
 
-      - name: get api url
-        id: api-url
+      - name: get api preview url
+        if: github.event_name == 'pull_request'
+        id: api-preview-url
         run: |
           echo "head_ref=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
           MODAL_ENV=$(echo "${{ github.head_ref }}" | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
           echo "url=https://${{ env.MODAL_PROFILE }}-${MODAL_ENV}--server.modal.run" >> "$GITHUB_OUTPUT"
 
-      - name: build
+      - name: build preview
+        if: github.event_name == 'pull_request'
         env:
-          VITE_API_BASE_URL: ${{ steps.api-url.outputs.url }}
+          VITE_API_BASE_URL: ${{ steps.api-preview-url.outputs.url }}
         run: bun run build
 
-      - name: deploy to cloudflare
+      - name: deploy to preview
+        if: github.event_name == 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          bun install -g wrangler
+          wrangler pages deploy ./dist --project-name=cloudflare-modal-neon \
+            --branch "${{ github.head_ref }}" \
+            --commit-hash "${{ github.sha }}" \
+            --commit-message "${{ github.event.head_commit.message }}"
+
+      - name: build production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          VITE_API_BASE_URL: https://${{ env.MODAL_PROFILE }}-production--server.modal.run"
+        run: bun run build
+
+      - name: deploy to production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
