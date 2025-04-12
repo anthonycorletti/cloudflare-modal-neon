@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[State]:
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title=f"FastAPI Server ({settings.SERVER_API_BASE_URL})",
+        title=f"FastAPI Server ({settings.ENV.value})",
         generate_unique_id_function=generate_unique_openapi_id,
         version=__version__,
         lifespan=lifespan,
