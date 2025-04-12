@@ -9,6 +9,7 @@ dependencies = [
     "asyncpg>=0.30.0",
     "fastapi>=0.115.11",
     "greenlet>=3.1.1",
+    "httpx>=0.28.1",
     "itsdangerous>=2.2.0",
     "logfire>=3.14.0",
     "modal>=0.73.98",
