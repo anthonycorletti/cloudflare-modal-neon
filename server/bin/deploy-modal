@@ -17,4 +17,5 @@ fi
 MODAL_ENV=$(echo ${MODAL_ENV} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
 
 uv run modal environment create ${MODAL_ENV} || true
+uv run modal config set-environment ${MODAL_ENV} || true
 APP_ENV=${APP_ENV:-"preview"} uv run modal deploy --env=${MODAL_ENV} app/_modal.py
