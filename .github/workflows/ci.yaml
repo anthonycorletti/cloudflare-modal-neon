@@ -185,7 +185,7 @@ jobs:
       - name: build production
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          VITE_API_BASE_URL: https://${{ env.MODAL_PROFILE }}-production--server.modal.run"
+          VITE_API_BASE_URL: https://${{ env.MODAL_PROFILE }}-production--server.modal.run
         run: bun run build
 
       - name: deploy to production
