@@ -86,7 +86,7 @@ def configure_logfire(service_name: Literal["server", "worker"]) -> None:
         service_version=os.environ.get("RELEASE_VERSION", "development"),
         console=False,
         sampling=logfire.SamplingOptions(
-            head=ParentBased(IgnoreSampler((_healthz_matcher, _worker_health_matcher))),
+            head=ParentBased(IgnoreSampler((_livez_matcher, _worker_health_matcher))),
         ),
     )
 
