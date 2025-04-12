@@ -89,15 +89,15 @@ jobs:
           uv run modal token set --token-id ${{ secrets.MODAL_TOKEN_ID }} --token-secret ${{ secrets.MODAL_TOKEN_SECRET }}
           APP_POSTGRES_PWD=${{ steps.create-db-branch.outputs.password }} APP_POSTGRES_HOST=${{ steps.create-db-branch.outputs.host_with_pooler }} APP_POSTGRES_DATABASE=neondb APP_POSTGRES_USER=neondb_owner APP_ENV=preview MODAL_ENV=${{ steps.branch-names.outputs.head_ref }} bin/deploy-modal
 
-      # - name: run migrations against production
-      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      #   run: |
-      #     APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_ENV=production bin/db-migrate
+      - name: run migrations against production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_ENV=production bin/db-migrate
 
-      # - name: deploy to production
-      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      #   run: |
-      #     APP_ENV=production bin/deploy-modal
+      - name: deploy to production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          APP_ENV=production bin/deploy-modal
 
   web:
     runs-on: ubuntu-latest

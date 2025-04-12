@@ -1,7 +1,9 @@
 import logging.config
+import uuid
 from typing import Any, Generic, TypeVar
 
 import structlog
+from logfire.integrations.structlog import LogfireProcessor
 
 from app.settings import settings
 
@@ -15,6 +17,7 @@ class Logging(Generic[RendererType]):
 
     Customized implementation inspired by the following documentation:
     https://www.structlog.org/en/stable/standard-library.html#rendering-using-structlog-based-formatters-within-logging
+
     """
 
     timestamper = structlog.processors.TimeStamper(fmt="iso")
@@ -24,7 +27,7 @@ class Logging(Generic[RendererType]):
         return settings.LOG_LEVEL
 
     @classmethod
-    def get_processors(cls) -> list[Any]:
+    def get_processors(cls, *, logfire: bool) -> list[Any]:
         return [
             structlog.contextvars.merge_contextvars,
             structlog.stdlib.add_log_level,
@@ -34,15 +37,16 @@ class Logging(Generic[RendererType]):
             structlog.processors.UnicodeDecoder(),
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
+            *([LogfireProcessor()] if logfire else []),
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ]
 
     @classmethod
-    def get_renderer(cls) -> RendererType:  # pragma: no cover
+    def get_renderer(cls) -> RendererType:
         raise NotImplementedError()
 
     @classmethod
-    def configure_stdlib(cls) -> None:
+    def configure_stdlib(cls, *, logfire: bool) -> None:
         level = cls.get_level()
         logging.config.dictConfig(
             {
@@ -64,6 +68,7 @@ class Logging(Generic[RendererType]):
                             cls.timestamper,
                             structlog.processors.UnicodeDecoder(),
                             structlog.processors.StackInfoRenderer(),
+                            *([LogfireProcessor()] if logfire else []),
                             structlog.processors.format_exc_info,
                         ],
                     },
@@ -87,28 +92,32 @@ class Logging(Generic[RendererType]):
                             "handlers": [],
                             "propagate": True,
                         }
-                        for logger in ["uvicorn", "sqlalchemy"]
+                        for logger in [
+                            "uvicorn",
+                            "sqlalchemy",
+                            "logfire",
+                        ]
                     },
                 },
             }
         )
 
     @classmethod
-    def configure_structlog(cls) -> None:
+    def configure_structlog(cls, *, logfire: bool = False) -> None:
         structlog.configure_once(
-            processors=cls.get_processors(),
+            processors=cls.get_processors(logfire=logfire),
             logger_factory=structlog.stdlib.LoggerFactory(),
             wrapper_class=structlog.stdlib.BoundLogger,
             cache_logger_on_first_use=True,
         )
 
     @classmethod
-    def configure(cls) -> None:
-        cls.configure_stdlib()
-        cls.configure_structlog()
+    def configure(cls, *, logfire: bool = False) -> None:
+        cls.configure_stdlib(logfire=logfire)
+        cls.configure_structlog(logfire=logfire)
 
 
-class Preview(Logging[structlog.dev.ConsoleRenderer]):
+class Development(Logging[structlog.dev.ConsoleRenderer]):
     @classmethod
     def get_renderer(cls) -> structlog.dev.ConsoleRenderer:
         return structlog.dev.ConsoleRenderer(colors=True)
@@ -116,9 +125,18 @@ class Preview(Logging[structlog.dev.ConsoleRenderer]):
 
 class Production(Logging[structlog.processors.JSONRenderer]):
     @classmethod
-    def get_renderer(cls) -> structlog.processors.JSONRenderer:  # pragma: no cover
+    def get_renderer(cls) -> structlog.processors.JSONRenderer:
         return structlog.processors.JSONRenderer()
 
 
-def configure_logging() -> None:
-    (Preview.configure() if not settings.is_production() else Production.configure())
+def configure_logging(*, logfire: bool = False) -> None:
+    if settings.is_test() or settings.is_local():
+        Development.configure(logfire=False)
+    elif settings.is_preview():
+        Development.configure(logfire=logfire)
+    else:
+        Production.configure(logfire=logfire)
+
+
+def generate_correlation_id() -> str:
+    return str(uuid.uuid4())

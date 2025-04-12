@@ -1,3 +1,11 @@
 #!/bin/sh -e
 
-uv run -- uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+SECRETS_DIR=../secrets
+
+# make the secrets key and cert files if they don't exist
+if [ ! -f $SECRETS_DIR/key.pem ]; then
+  mkdir -p $SECRETS_DIR
+  openssl req -x509 -newkey rsa:2048 -keyout $SECRETS_DIR/key.pem -out $SECRETS_DIR/cert.pem -days 365 -nodes -subj "/CN=localhost"
+fi
+
+uv run -- uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --ssl-keyfile=$SECRETS_DIR/key.pem --ssl-certfile=$SECRETS_DIR/cert.pem

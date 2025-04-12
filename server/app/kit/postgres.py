@@ -2,6 +2,7 @@ from collections.abc import AsyncGenerator
 from typing import Literal, TypeAlias
 
 from fastapi import Depends, Request
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     async_sessionmaker,
@@ -59,6 +60,7 @@ async def get_async_db_session(
 
 
 __all__ = [
+    "Engine",
     "AsyncSession",
     "AsyncSessionMaker",
     "create_async_engine",

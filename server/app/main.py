@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.routing import APIRoute
 
 from app import __version__
+from app._logfire import configure_logfire, instrument_fastapi, instrument_httpx
 from app.kit.postgres import (
     AsyncEngine,
     AsyncSession,
@@ -21,6 +22,7 @@ from app.kit.postgres import (
 from app.logging import configure_logging
 from app.middlewares import setup_middlewares
 from app.router import router
+from app.sentry import configure_sentry
 from app.settings import settings
 
 log = structlog.get_logger()
@@ -89,6 +91,10 @@ def create_app() -> FastAPI:
     return app
 
 
-configure_logging()
+configure_sentry()
+configure_logfire("server")
+configure_logging(logfire=True)
 
 app = create_app()
+instrument_fastapi(app)
+instrument_httpx()

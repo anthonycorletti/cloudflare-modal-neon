@@ -25,14 +25,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "theanswertolifeeverythingandtheuniverseis42"
 
     # Comma separated list of origins that are allowed to make
-    CORS_ORIGINS: str = "http://127.0.0.1:5173"
+    CORS_ORIGINS: str = "https://127.0.0.1:5173"
 
     # Base URL for the backend. Used by generate_external_api_url to
     # generate URLs to the backend accessible from the outside.
-    SERVER_API_BASE_URL: str = "http://127.0.0.1:8000"
+    SERVER_API_BASE_URL: str = "https://127.0.0.1:8000"
 
     # URL to frontend client app.
-    WEB_BASE_URL: str = "http://127.0.0.1:5173"
+    WEB_BASE_URL: str = "https://127.0.0.1:5173"
 
     # postgres
     POSTGRES_SCHEME: str = "postgresql+asyncpg"
@@ -44,11 +44,19 @@ class Settings(BaseSettings):
     POSTGRES_POOL_SIZE: int = 5
     POSTGRES_POOL_RECYCLE_SECONDS: int = 600  # 10 minutes
 
+    # Modal OTEL
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = "otlp-collector.modal.local:4317"
+    OTEL_EXPORTER_OTLP_INSECURE: str = "true"
+    OTEL_EXPORTER_OTLP_PROTOCOL: str = "http/protobuf"
+
     # Sentry
     SENTRY_DSN: str | None = None
 
     # Sendgrid
     SENDGRID_API_KEY: str = ""
+
+    # Logfire
+    LOGFIRE_TOKEN: str = ""
 
     model_config = SettingsConfigDict(
         env_prefix="app_",
