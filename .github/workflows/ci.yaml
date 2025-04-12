@@ -183,8 +183,6 @@ jobs:
           VITE_API_BASE_URL = "${{ steps.api-preview-url.outputs.url }}"
           EOF
 
-          cat wrangler.toml
-
           wrangler pages deploy ./dist --project-name=cloudflare-modal-neon \
             --branch "${{ github.head_ref }}" \
             --commit-hash "${{ github.sha }}" \
