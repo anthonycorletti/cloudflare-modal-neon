@@ -1,4 +1,3 @@
-import os
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Literal
 
@@ -83,7 +82,6 @@ def configure_logfire(service_name: Literal["server", "worker"]) -> None:
         token=settings.LOGFIRE_TOKEN,
         service_name=service_name,
         environment=settings.ENV.value,
-        service_version=os.environ.get("RELEASE_VERSION", "development"),
         console=False,
         sampling=logfire.SamplingOptions(
             head=ParentBased(IgnoreSampler((_livez_matcher, _worker_health_matcher))),
