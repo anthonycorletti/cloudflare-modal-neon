@@ -45,9 +45,9 @@ class Settings(BaseSettings):
     POSTGRES_POOL_RECYCLE_SECONDS: int = 600  # 10 minutes
 
     # Modal OTEL
-    OTEL_EXPORTER_OTLP_ENDPOINT: str = "otlp-collector.modal.local:4317"
-    OTEL_EXPORTER_OTLP_INSECURE: str = "true"
-    OTEL_EXPORTER_OTLP_PROTOCOL: str = "http/protobuf"
+    MODAL_OTEL_EXPORTER_OTLP_ENDPOINT: str = "otlp-collector.modal.local:4317"
+    MODAL_OTEL_EXPORTER_OTLP_INSECURE: str = "true"
+    MODAL_OTEL_EXPORTER_OTLP_PROTOCOL: str = "http/protobuf"
 
     # Sentry
     SENTRY_DSN: str | None = None
