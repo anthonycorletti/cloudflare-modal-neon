@@ -4,7 +4,12 @@ from fastapi import FastAPI
 from modal import App, Image, Secret, asgi_app
 
 app = App(name="cloudflare-modal-neon")
-app_secrets = [Secret.from_name(f"env-{os.environ['APP_ENV']}")]
+
+app_secrets = [
+    Secret.from_name(
+        f"env-{os.environ['APP_ENV']}", environment_name=os.environ["APP_ENV"]
+    ),
+]
 
 
 image = (
