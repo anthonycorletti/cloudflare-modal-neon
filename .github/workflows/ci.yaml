@@ -82,7 +82,7 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           APP_POSTGRES_PWD: ${{ steps.create-db-branch.outputs.password }}
-          APP_POSTGRES_HOST: ${{ steps.create-db-branch.outputs.host_with_pooler }}
+          APP_POSTGRES_HOST: ${{ steps.create-db-branch.outputs.db_host_pooled }}
           APP_POSTGRES_DATABASE: neondb
           APP_POSTGRES_USER: neondb_owner
           APP_ENV: preview
@@ -92,7 +92,7 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           APP_POSTGRES_PWD: ${{ steps.create-db-branch.outputs.password }}
-          APP_POSTGRES_HOST: ${{ steps.create-db-branch.outputs.host_with_pooler }}
+          APP_POSTGRES_HOST: ${{ steps.create-db-branch.outputs.db_host_pooled }}
           APP_POSTGRES_DATABASE: neondb
           APP_POSTGRES_USER: neondb_owner
           APP_ENV: preview
