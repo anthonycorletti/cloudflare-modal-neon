@@ -4,12 +4,14 @@ import { defineConfig } from "vite";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 
 export default defineConfig(({ mode }) => {
-  const plugins = [react()];
-
+  let pluginArr = [];
   if (mode === 'development') {
-    plugins.push(basicSsl());
+    pluginArr = [react(), basicSsl()];
+  } else {
+    pluginArr = [react()];
   }
-
+  const plugins = pluginArr;
+  //
   return {
     plugins,
     resolve: {
