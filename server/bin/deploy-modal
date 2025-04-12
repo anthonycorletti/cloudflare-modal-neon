@@ -1,7 +1,9 @@
 #!/bin/sh -e
 
 # set the APP_ENV environment variable to production if it is not already set
-uv run modal profile activate ${MODAL_PROFILE:-"anthonycorletti"}
+MODAL_PROFILE=${MODAL_PROFILE:-"anthonycorletti"}
+uv run modal profile activate ${MODAL_PROFILE}
+
 # if modal env is not set, raise an error
 MODAL_ENV=${MODAL_ENV:-""}
 if [ -z "${MODAL_ENV}" ]; then
