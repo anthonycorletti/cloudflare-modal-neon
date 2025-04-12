@@ -125,6 +125,8 @@ jobs:
           bin/deploy-modal
 
   web:
+    needs: server
+
     runs-on: ubuntu-latest
 
     defaults:
