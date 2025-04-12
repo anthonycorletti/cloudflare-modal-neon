@@ -92,7 +92,7 @@ jobs:
       - name: run migrations against production
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_ENV=production bin/db-migrate
+          APP_POSTGRES_PWD=${{ secrets.PROD_POSTGRES_PWD }} APP_POSTGRES_HOST=${{ secrets.PROD_POSTGRES_HOST }} APP_POSTGRES_DATABASE=neondb APP_POSTGRES_USER=neondb_owner APP_ENV=production bin/db-migrate
 
       - name: deploy to production
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
