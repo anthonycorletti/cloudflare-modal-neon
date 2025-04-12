@@ -63,8 +63,8 @@ class IgnoreSampler(Sampler):
         return "IgnoreSampler"
 
 
-def _healthz_matcher(name: str, attributes: "Attributes | None") -> bool:
-    return attributes is not None and attributes.get("http.route") == "/healthz"
+def _livez_matcher(name: str, attributes: "Attributes | None") -> bool:
+    return attributes is not None and attributes.get("http.route") == "/livez"
 
 
 def _worker_health_matcher(name: str, attributes: "Attributes | None") -> bool:
