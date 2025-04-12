@@ -71,7 +71,7 @@ jobs:
       - name: create db branch in neon for pull request
         id: create-db-branch
         if: github.event_name == 'pull_request'
-        uses: neondatabase/create-branch-action@v5
+        uses: neondatabase/create-branch-action@v6
         with:
           api_key: ${{ secrets.NEON_API_KEY }} # Generate an API key in your Neon account settings
           project_id: ${{ secrets.NEON_PROJECT_ID }}
