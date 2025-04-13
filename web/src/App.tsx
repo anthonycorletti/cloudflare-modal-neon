@@ -60,7 +60,7 @@ export default function App() {
             {version.length > 0 ? `${message} @ ${version}` : "Checking system health..."}
           </div>
         </div>
-        <div className={cn("text-left")}>© {new Date().getFullYear()} enormicom inc.
+        <div className={cn("text-left")}>© {new Date().getFullYear()} acme inc.
         </div>
       </footer >
     </ThemeProvider>

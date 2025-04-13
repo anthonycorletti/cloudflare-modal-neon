@@ -11,7 +11,7 @@
         {
             "name": "server",
             "path": "server"
-        },
+        }
     ],
     "settings": {
         "python.defaultInterpreterPath": "${workspaceFolder:server}/.venv/bin/python",
