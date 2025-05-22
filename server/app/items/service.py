@@ -15,8 +15,7 @@ class ItemsService:
     async def create_item(self, db: AsyncSession, items_create: ItemsCreate) -> Items:
         item = Items(**items_create.model_dump())
         db.add(item)
-        await db.commit()
-        await db.refresh(item)
+        await db.flush()
         return item
 
     async def get_item(self, db: AsyncSession, item_name: str) -> Items | None:
@@ -27,7 +26,6 @@ class ItemsService:
         item = await self.get_item(db, item_name)
         if item:
             await db.delete(item)
-            await db.commit()
 
     async def update_item(
         self, db: AsyncSession, item: Items, items_update: ItemsUpdate
@@ -35,6 +33,5 @@ class ItemsService:
         for key, value in items_update.model_dump().items():
             setattr(item, key, value)
         db.add(item)
-        await db.commit()
-        await db.refresh(item)
+        await db.flush()
         return item

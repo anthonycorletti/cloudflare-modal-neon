@@ -48,15 +48,18 @@ async def get_async_db_session(
     request: Request,
     asyncsessionmaker: AsyncSessionMaker = Depends(get_async_db_sessionmaker),
 ) -> AsyncGenerator[AsyncSession, None]:
-    async with asyncsessionmaker() as asyncsession:
-        try:
-            request.state.asyncsession = asyncsession
-            yield asyncsession
-        except:
-            await asyncsession.rollback()
-            raise
-        else:
-            await asyncsession.commit()
+    if session := getattr(request.state, "session", None):
+        yield session
+    else:
+        async with asyncsessionmaker() as session:
+            try:
+                request.state.session = session
+                yield session
+            except:
+                await session.rollback()
+                raise
+            else:
+                await session.commit()
 
 
 __all__ = [

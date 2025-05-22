@@ -67,7 +67,6 @@ exclude = ["tests"]
 addopts = [
     "-o",
     "console_output_style=progress",
-    "--asyncio-mode=auto",
     "--disable-warnings",
     "--showlocals",
     "--cov=app",
@@ -76,18 +75,18 @@ addopts = [
     "--cov-report=xml",
     "--cov-report=html",
 ]
+asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 norecursedirs = ["tmp"]
 
 # coverage
 [tool.coverage.run]
-parallel = true
 source = ["app", "tests"]
 omit = ["*__init__.py", "app/_modal.py"]
 concurrency = ["thread", "greenlet", "multiprocessing"]
 
 [tool.coverage.report]
-exclude_lines = ["pragma: no cover"]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
 
 [tool.coverage.html]
 directory = "htmlcov"
