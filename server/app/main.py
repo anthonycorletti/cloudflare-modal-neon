@@ -25,9 +25,8 @@ from app.router import router
 from app.sentry import configure_sentry
 from app.settings import settings
 
-log = structlog.get_logger()
-
 os.environ["TZ"] = "UTC"
+log = structlog.get_logger()
 
 
 def generate_unique_openapi_id(route: APIRoute) -> str:

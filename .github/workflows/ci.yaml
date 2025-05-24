@@ -34,9 +34,6 @@ jobs:
       - name: install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: setup bun
-        uses: oven-sh/setup-bun@v2
-
       - name: set up python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 

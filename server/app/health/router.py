@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from app import __version__
 from app.health.schemas import ReadinessCheck
@@ -18,3 +18,13 @@ async def readiness_check(
     _: AsyncSession = Depends(get_async_db_session),
 ) -> ReadinessCheck:
     return ReadinessCheck(message="All systems go.", version=__version__, t=utc_now())
+
+
+@router.get("/failz", response_class=Response)
+async def failz(how: str = Query("http")) -> Response:
+    if how == "http":
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="http-🔥"
+        )
+    else:
+        raise Exception("exc-🔥")

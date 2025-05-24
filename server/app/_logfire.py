@@ -74,7 +74,7 @@ def _worker_health_matcher(name: str, attributes: "Attributes | None") -> bool:
 
 
 def configure_logfire(service_name: Literal["server", "worker"]) -> None:
-    if settings.is_test():
+    if settings.is_test() or settings.is_local():
         return
 
     logfire.configure(
