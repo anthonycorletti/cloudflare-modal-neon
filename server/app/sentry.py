@@ -11,7 +11,6 @@ def configure_sentry() -> None:
         traces_sample_rate=0.1,
         profiles_sample_rate=0.1,
         environment=settings.ENV.value,
-        integrations=[
-            FastApiIntegration(transaction_style="endpoint"),
-        ],
+        integrations=[FastApiIntegration(transaction_style="endpoint")],
+        _experiments={"enable_logs": True},
     )

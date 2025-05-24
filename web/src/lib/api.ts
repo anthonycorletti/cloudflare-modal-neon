@@ -1,3 +1,5 @@
+import { CONFIG } from "./config";
+
 export type apiRequest = {
     method: string;
     path: string;
@@ -6,11 +8,17 @@ export type apiRequest = {
 };
 
 export async function makeApiRequest(request: apiRequest): Promise<unknown> {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${request.path}`, {
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        method: request.method,
-        body: JSON.stringify(request.body),
-    });
+    const response = await fetch(
+        `${CONFIG.WEB_BASE_URL}${request.path}`,
+        {
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            method: request.method,
+            body: JSON.stringify(request.body),
+        },
+    );
 
     if (response.ok) {
         return await response.json();
@@ -25,5 +33,4 @@ export async function makeApiRequest(request: apiRequest): Promise<unknown> {
             console.error(response.statusText);
         }
     }
-
 }

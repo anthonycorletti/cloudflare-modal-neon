@@ -19,7 +19,7 @@ brew install bun uv
 
 ## Getting started
 
-To get started working with server side code, make sure you have access to modal, sentry, and neon.
+To get started working with server side code, make sure you have access to the services listed below.
 
 Also, explore all the contents of the `bin` directory. These are commands you can run to install, lint, run, and test the code.
 

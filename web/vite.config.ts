@@ -5,7 +5,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 
 export default defineConfig(({ mode }) => {
   let pluginArr = [];
-  if (mode === 'development') {
+  if (mode === "development") {
     pluginArr = [react(), basicSsl()];
   } else {
     pluginArr = [react()];
