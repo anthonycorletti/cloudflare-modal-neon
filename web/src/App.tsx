@@ -49,7 +49,14 @@ export default function App() {
           <Button onClick={() => setCount(count + 1)}>Click me {count}</Button>
         </div>
         <div className={cn("flex items-center justify-center min-h-screen")}>
-          <Button variant={"destructive"} onClick={() => { throw new Error("Sentry Test Error"); }}>Oh 💩</Button>
+          <Button
+            variant={"destructive"}
+            onClick={() => {
+              throw new Error("Sentry Test Error");
+            }}
+          >
+            Oh 💩
+          </Button>
         </div>
       </div>
 
