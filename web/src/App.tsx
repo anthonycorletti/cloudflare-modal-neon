@@ -6,7 +6,7 @@ import { CONFIG } from "@/lib/config";
 
 export default function App() {
   const [count, setCount] = useState(0);
-  const baseUrl = CONFIG.WEB_BASE_URL;
+  const serverURL = CONFIG.SERVER_BASE_URL;
 
   const [status, setStatus] = useState({
     message: "Checking system health...",
@@ -16,7 +16,7 @@ export default function App() {
   useEffect(() => {
     async function fetchStatus() {
       try {
-        const response = await fetch(`${baseUrl}/readyz`);
+        const response = await fetch(`${serverURL}/readyz`);
         const data = await response.json();
         if (data.version) {
           data.version = `v${data.version}`;
@@ -35,7 +35,7 @@ export default function App() {
     }
 
     fetchStatus();
-  }, [baseUrl]);
+  }, [serverURL]);
 
   const { message, version } = status;
 
@@ -63,7 +63,7 @@ export default function App() {
             "relative text-left flex flex-row space-x-2 items-center",
           )}
         >
-          <div>{baseUrl}</div>
+          <div>{serverURL}</div>
           <div>
             {version.length > 0
               ? `${message} @ ${version}`
