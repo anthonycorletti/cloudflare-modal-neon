@@ -7,8 +7,6 @@ const defaults = {
   SERVER_CLIENT_TRACE_ROUTE: env.VITE_SERVER_CLIENT_TRACE_ROUTE || "/client-traces",
 };
 
-console.log("CONFIG", defaults);
-
 export const CONFIG = {
   ...defaults,
 };
