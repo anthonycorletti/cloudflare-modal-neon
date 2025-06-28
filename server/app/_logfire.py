@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from opentelemetry.trace.span import TraceState
     from opentelemetry.util.types import Attributes
 
+from fastapi import APIRouter, Request, Response
+
 from app.kit.postgres import Engine
 from app.settings import settings
 
@@ -113,8 +115,12 @@ def instrument_sqlalchemy(engine: Engine) -> None:
     SQLAlchemyInstrumentor().instrument(engine=engine)
 
 
-__all__ = [
-    "configure_logfire",
-    "instrument_fastapi",
-    "instrument_sqlalchemy",
-]
+router = APIRouter(tags=["metrics_endpoint"])
+
+
+@router.post("/client-traces", response_class=Response)
+async def client_traces(request: Request) -> Response:
+    return Response(status_code=204)
+
+
+__all__ = ["configure_logfire", "instrument_fastapi", "instrument_sqlalchemy", "router"]

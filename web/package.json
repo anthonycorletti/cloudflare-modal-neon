@@ -11,6 +11,9 @@
     "prettier": "prettier --write ."
   },
   "dependencies": {
+    "@opentelemetry/auto-instrumentations-web": "^0.48.0",
+    "@opentelemetry/context-zone": "^2.0.1",
+    "@pydantic/logfire-browser": "^0.2.0",
     "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/react-slot": "^1.2.3",
     "@sentry/react": "^9.22.0",
