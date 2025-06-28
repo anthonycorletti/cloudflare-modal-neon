@@ -16,4 +16,4 @@ logfire.configure({
     diagLogLevel: (CONFIG.ENV === 'development') ? logfire.DiagLogLevel.ALL : logfire.DiagLogLevel.WARN,
 })
 
-logfire.info("Logfire initialized");
+logfire.error("Logfire initialized");
