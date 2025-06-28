@@ -15,3 +15,5 @@ logfire.configure({
     // This outputs details about the generated spans in the browser console, use only in development and for troubleshooting.
     diagLogLevel: (CONFIG.ENV === 'development') ? logfire.DiagLogLevel.ALL : logfire.DiagLogLevel.WARN,
 })
+
+logfire.info("Logfire initialized");
