@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from opentelemetry.trace.span import TraceState
     from opentelemetry.util.types import Attributes
 
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
 from app.kit.postgres import Engine
@@ -119,8 +119,8 @@ def instrument_sqlalchemy(engine: Engine) -> None:
 router = APIRouter(tags=["metrics_endpoint"])
 
 
-@router.post("/client-traces", response_class=Response)
-async def client_traces(request: Request) -> Response:
+@router.post("/client-traces", response_class=RedirectResponse)
+async def client_traces(request: Request) -> RedirectResponse:
     mutable_headers = request.headers.mutablecopy()
     mutable_headers["Authorization"] = settings.LOGFIRE_TOKEN
     return RedirectResponse(
