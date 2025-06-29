@@ -28,6 +28,13 @@ def add_session_middleware(app: FastAPI) -> None:
     app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 
+def add_logfire_middleware(app: FastAPI) -> None:
+    from app._logfire import LogfireClientTracesMiddleware
+
+    app.add_middleware(LogfireClientTracesMiddleware)
+
+
 def setup_middlewares(app: FastAPI) -> None:
     add_cors_middleware(app)
     add_session_middleware(app)
+    add_logfire_middleware(app)

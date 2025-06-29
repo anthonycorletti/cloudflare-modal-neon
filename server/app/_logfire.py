@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal
 
 import httpx
 import logfire
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from opentelemetry.sdk.trace.sampling import (
@@ -13,6 +13,7 @@ from opentelemetry.sdk.trace.sampling import (
     Sampler,
     SamplingResult,
 )
+from starlette.middleware.base import BaseHTTPMiddleware
 
 if TYPE_CHECKING:
     from opentelemetry.context import Context
@@ -21,7 +22,6 @@ if TYPE_CHECKING:
     from opentelemetry.util.types import Attributes
 
 from fastapi import APIRouter, Request
-from fastapi.responses import RedirectResponse
 
 from app.kit.postgres import Engine
 from app.settings import settings
@@ -119,15 +119,33 @@ def instrument_sqlalchemy(engine: Engine) -> None:
 router = APIRouter(tags=["metrics_endpoint"])
 
 
-@router.post("/client-traces", response_class=RedirectResponse)
-async def client_traces(request: Request) -> RedirectResponse:
-    mutable_headers = request.headers.mutablecopy()
-    mutable_headers["Authorization"] = settings.LOGFIRE_TOKEN
-    return RedirectResponse(
-        url=settings.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
-        status_code=204,
-        headers=mutable_headers,
-    )
+class LogfireClientTracesMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        if request.url.path.startswith("/client-traces"):
+            headers = request.headers.mutablecopy()
+            headers["Authorization"] = settings.LOGFIRE_TOKEN
+
+            async with httpx.AsyncClient() as http_client:
+                forwarded_request = await http_client.request(
+                    method=request.method,
+                    url=settings.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+                    headers=headers,
+                    content=await request.body(),
+                )
+
+            return Response(
+                content=forwarded_request.content,
+                status_code=forwarded_request.status_code,
+                headers=dict(request.headers),
+            )
+
+        response = await call_next(request)
+        return response
 
 
-__all__ = ["configure_logfire", "instrument_fastapi", "instrument_sqlalchemy", "router"]
+__all__ = [
+    "configure_logfire",
+    "instrument_fastapi",
+    "instrument_sqlalchemy",
+    "LogfireClientTracesMiddleware",
+]
