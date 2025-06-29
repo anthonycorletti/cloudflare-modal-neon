@@ -21,12 +21,15 @@ if TYPE_CHECKING:
     from opentelemetry.trace.span import TraceState
     from opentelemetry.util.types import Attributes
 
+import structlog
 from fastapi import APIRouter, Request
 
 from app.kit.postgres import Engine
 from app.settings import settings
 
 Matcher = Callable[[str, "Attributes | None"], bool]
+
+logger = structlog.get_logger()
 
 
 class IgnoreSampler(Sampler):
@@ -106,7 +109,7 @@ def instrument_fastapi(app: FastAPI) -> None:
     if settings.is_test() or settings.is_local():
         return
 
-    logfire.instrument_fastapi(app)
+    logfire.instrument_fastapi(app, capture_headers=True)
 
 
 def instrument_sqlalchemy(engine: Engine) -> None:
@@ -122,7 +125,7 @@ router = APIRouter(tags=["metrics_endpoint"])
 class LogfireClientTracesMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         if request.url.path.startswith("/client-traces"):
-            headers = request.headers.mutablecopy()
+            headers = dict(request.headers)
             headers["Authorization"] = settings.LOGFIRE_TOKEN
 
             async with httpx.AsyncClient() as http_client:
