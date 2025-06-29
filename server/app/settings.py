@@ -57,6 +57,12 @@ class Settings(BaseSettings):
 
     # Logfire
     LOGFIRE_TOKEN: str = ""
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: str = (
+        "https://logfire-api.pydantic.dev/v1/traces"
+    )
+    OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: str = (
+        "https://logfire-api.pydantic.dev/v1/metrics"
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="app_",

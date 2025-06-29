@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from opentelemetry.util.types import Attributes
 
 from fastapi import APIRouter, Request, Response
+from fastapi.responses import RedirectResponse
 
 from app.kit.postgres import Engine
 from app.settings import settings
@@ -120,7 +121,13 @@ router = APIRouter(tags=["metrics_endpoint"])
 
 @router.post("/client-traces", response_class=Response)
 async def client_traces(request: Request) -> Response:
-    return Response(status_code=204)
+    mutable_headers = request.headers.mutablecopy()
+    mutable_headers["Authorization"] = settings.LOGFIRE_TOKEN
+    return RedirectResponse(
+        url=settings.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+        status_code=204,
+        headers=mutable_headers,
+    )
 
 
 __all__ = ["configure_logfire", "instrument_fastapi", "instrument_sqlalchemy", "router"]
