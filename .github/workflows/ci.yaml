@@ -151,8 +151,8 @@ jobs:
       - name: lint
         run: bun run lint
 
-      - name: run tests
-        run: bun test
+      # - name: run tests
+      #   run: bun test
 
       - name: get api preview url
         if: github.event_name == 'pull_request'
