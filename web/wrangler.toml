@@ -1,0 +1,8 @@
+name = "cloudflare-modal-neon"
+main = "src/main-worker.js"
+compatibility_date = "2025-07-05"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
