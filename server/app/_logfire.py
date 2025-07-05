@@ -130,11 +130,6 @@ class LogfireClientTracesMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         if request.url.path.startswith("/client-traces"):
             body = await request.body()
-            logger.info(
-                "sending request",
-                body=body,
-                headers=logfire_httpx_client.headers,
-            )
             forwarded_request = await logfire_httpx_client.request(
                 method=request.method,
                 url=settings.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
@@ -143,7 +138,11 @@ class LogfireClientTracesMiddleware(BaseHTTPMiddleware):
             return Response(
                 content=forwarded_request.content,
                 status_code=forwarded_request.status_code,
-                headers=dict(request.headers),
+                headers={
+                    "Access-Control-Allow-Credentials": "true",
+                    "Access-Control-Allow-Origin": settings.WEB_BASE_URL,
+                    "Access-Control-Allow-Headers": "Authorization, Content-Type",
+                },
             )
 
         response = await call_next(request)

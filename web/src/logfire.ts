@@ -16,4 +16,22 @@ logfire.configure({
     diagLogLevel: (CONFIG.ENV === 'development') ? logfire.DiagLogLevel.ALL : logfire.DiagLogLevel.WARN,
 })
 
+window.addEventListener("error", (event) => {
+    logfire.error("Uncaught error", {
+        message: event.message,
+        stack: event.error?.stack,
+        error: event.error,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+    });
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+    logfire.error("Unhandled promise rejection", {
+        reason: event.reason,
+        stack: event.reason?.stack,
+    });
+});
+
 logfire.error("Logfire initialized! 🔥");
