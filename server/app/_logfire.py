@@ -132,7 +132,7 @@ class LogfireClientTracesMiddleware(BaseHTTPMiddleware):
             body = await request.body()
             logger.info(
                 "sending request",
-                body=body or "NONE!!",
+                body=body,
                 headers=logfire_httpx_client.headers,
             )
             forwarded_request = await logfire_httpx_client.request(
