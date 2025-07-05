@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "theanswertolifeeverythingandtheuniverseis42"
 
     # Comma separated list of origins that are allowed to make
-    CORS_ORIGINS: str = "https://127.0.0.1:5173"
+    CORS_ORIGINS: str = "https://127.0.0.1:5173,https://logfire-api.pydantic.dev"
 
     # Base URL for the backend. Used by generate_external_api_url to
     # generate URLs to the backend accessible from the outside.

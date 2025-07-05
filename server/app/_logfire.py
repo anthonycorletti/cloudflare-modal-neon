@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal
 
 import httpx
 import logfire
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request, Response
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from opentelemetry.sdk.trace.sampling import (
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from opentelemetry.util.types import Attributes
 
 import structlog
-from fastapi import APIRouter, Request
 
 from app.kit.postgres import Engine
 from app.settings import settings
@@ -119,23 +118,28 @@ def instrument_sqlalchemy(engine: Engine) -> None:
     SQLAlchemyInstrumentor().instrument(engine=engine)
 
 
-router = APIRouter(tags=["metrics_endpoint"])
+logfire_httpx_client = httpx.AsyncClient(
+    headers={
+        "Authorization": settings.LOGFIRE_TOKEN,
+        "Content-Type": "application/json",
+    },
+)
 
 
 class LogfireClientTracesMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         if request.url.path.startswith("/client-traces"):
-            headers = dict(request.headers)
-            headers["Authorization"] = settings.LOGFIRE_TOKEN
-
-            async with httpx.AsyncClient() as http_client:
-                forwarded_request = await http_client.request(
-                    method=request.method,
-                    url=settings.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
-                    headers=headers,
-                    content=await request.body(),
-                )
-
+            body = await request.body()
+            logger.info(
+                "sending request",
+                body=body or "NONE!!",
+                headers=logfire_httpx_client.headers,
+            )
+            forwarded_request = await logfire_httpx_client.request(
+                method=request.method,
+                url=settings.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+                content=body,
+            )
             return Response(
                 content=forwarded_request.content,
                 status_code=forwarded_request.status_code,

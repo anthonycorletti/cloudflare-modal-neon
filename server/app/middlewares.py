@@ -9,7 +9,6 @@ log = structlog.get_logger()
 
 
 def add_cors_middleware(app: FastAPI) -> None:
-    log.info("Adding CORS middleware", allow_origins=settings.CORS_ORIGINS or "None")
     allowed_origins = settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS else []
     return (
         None
