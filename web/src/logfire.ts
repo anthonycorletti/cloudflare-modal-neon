@@ -4,6 +4,7 @@ import packageJson from '../package.json';
 import { CONFIG } from "./lib/config";
 
 logfire.configure({
+    // environment: CONFIG.ENV, -- TODO: logfire-browser does not support environment yet
     traceUrl: CONFIG.SERVER_BASE_URL + CONFIG.SERVER_CLIENT_TRACE_ROUTE,
     serviceName: `web-${CONFIG.ENV}`,
     serviceVersion: packageJson.version,
