@@ -1,16 +1,17 @@
-import os
+import json
+from typing import Dict
 
 from fastapi import FastAPI
 from modal import App, Image, Secret, asgi_app
 
+from app.settings import settings
+
 app = App(name="cloudflare-modal-neon")
 
-app_secrets = [
-    Secret.from_name(
-        f"env-{os.environ['APP_ENV']}", environment_name=os.environ["APP_ENV"]
-    ),
-]
-
+_app_env_dict: Dict[str, str | None] = {
+    f"APP_{str(k)}": str(v) for k, v in json.loads(settings.model_dump_json()).items()
+}
+app_secrets = Secret.from_dict(_app_env_dict)
 
 image = (
     Image.debian_slim()
@@ -24,7 +25,7 @@ image = (
 )
 
 
-@app.function(image=image, timeout=30, secrets=app_secrets)
+@app.function(image=image, timeout=30, secrets=[app_secrets])
 @asgi_app(label="server")
 def server() -> FastAPI:
     from app.main import app

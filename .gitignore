@@ -2,3 +2,6 @@
 secrets/*
 !secrets/.keep
 tmp/
+
+.env.production
+.env.preview
