@@ -188,4 +188,4 @@ jobs:
           VITE_SERVER_BASE_URL: https://${{ env.MODAL_PROFILE }}-production--server.modal.run
         run: |
           bun run build
-          bunx wrangler pages deploy --var VITE_SERVER_BASE_URL:"${VITE_SERVER_BASE_URL}"
+          bunx wrangler deploy --var VITE_SERVER_BASE_URL:"${VITE_SERVER_BASE_URL}"
