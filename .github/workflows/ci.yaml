@@ -99,6 +99,7 @@ jobs:
           APP_LOGFIRE_TOKEN: ${{ secrets.APP_LOGFIRE_TOKEN }}
           APP_WEB_BASE_URL: ${{ steps.branch-names.outputs.head_ref }}-cloudflare-modal-neon.personal-781.workers.dev
         run: |
+          echo "APP_WEB_BASE_URL: ${APP_WEB_BASE_URL}"
           uv run modal token set --token-id ${{ secrets.MODAL_TOKEN_ID }} --token-secret ${{ secrets.MODAL_TOKEN_SECRET }}
           bin/deploy-modal
 
