@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 import structlog
 
-from app.kit.postgres import Engine
+from app.kit.db.postgres import Engine
 from app.settings import settings
 
 Matcher = Callable[[str, "Attributes | None"], bool]

@@ -5,8 +5,8 @@ build \
 dist \
 site \
 htmlcov \
-.mypy_cache \
 .pytest_cache \
+.ty_cache \
 .ruff_cache \
 *.egg-info \
 coverage.xml \

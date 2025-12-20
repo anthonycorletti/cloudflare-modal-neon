@@ -48,59 +48,58 @@ class Logging(Generic[RendererType]):
     @classmethod
     def configure_stdlib(cls, *, logfire: bool) -> None:
         level = cls.get_level()
-        logging.config.dictConfig(
-            {
-                "version": 1,
-                "disable_existing_loggers": True,
-                "formatters": {
-                    "app": {
-                        "()": structlog.stdlib.ProcessorFormatter,
-                        "processors": [
-                            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-                            cls.get_renderer(),
-                        ],
-                        "foreign_pre_chain": [
-                            structlog.contextvars.merge_contextvars,
-                            structlog.stdlib.add_log_level,
-                            structlog.stdlib.add_logger_name,
-                            structlog.stdlib.PositionalArgumentsFormatter(),
-                            structlog.stdlib.ExtraAdder(),
-                            cls.timestamper,
-                            structlog.processors.UnicodeDecoder(),
-                            structlog.processors.StackInfoRenderer(),
-                            *([LogfireProcessor()] if logfire else []),
-                            structlog.processors.format_exc_info,
-                        ],
-                    },
+        config: dict[str, Any] = {
+            "version": 1,
+            "disable_existing_loggers": True,
+            "formatters": {
+                "app": {
+                    "()": structlog.stdlib.ProcessorFormatter,
+                    "processors": [
+                        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                        cls.get_renderer(),
+                    ],
+                    "foreign_pre_chain": [
+                        structlog.contextvars.merge_contextvars,
+                        structlog.stdlib.add_log_level,
+                        structlog.stdlib.add_logger_name,
+                        structlog.stdlib.PositionalArgumentsFormatter(),
+                        structlog.stdlib.ExtraAdder(),
+                        cls.timestamper,
+                        structlog.processors.UnicodeDecoder(),
+                        structlog.processors.StackInfoRenderer(),
+                        *([LogfireProcessor()] if logfire else []),
+                        structlog.processors.format_exc_info,
+                    ],
                 },
-                "handlers": {
-                    "default": {
-                        "level": level,
-                        "class": "logging.StreamHandler",
-                        "formatter": "app",
-                    },
+            },
+            "handlers": {
+                "default": {
+                    "level": level,
+                    "class": "logging.StreamHandler",
+                    "formatter": "app",
                 },
-                "loggers": {
-                    "": {
-                        "handlers": ["default"],
-                        "level": level,
-                        "propagate": False,
-                    },
-                    # Propagate third-party loggers to the root one
-                    **{
-                        logger: {
-                            "handlers": [],
-                            "propagate": True,
-                        }
-                        for logger in [
-                            "uvicorn",
-                            "sqlalchemy",
-                            "logfire",
-                        ]
-                    },
+            },
+            "loggers": {
+                "": {
+                    "handlers": ["default"],
+                    "level": level,
+                    "propagate": False,
                 },
-            }
-        )
+                # Propagate third-party loggers to the root one
+                **{
+                    logger: {
+                        "handlers": [],
+                        "propagate": True,
+                    }
+                    for logger in [
+                        "uvicorn",
+                        "sqlalchemy",
+                        "logfire",
+                    ]
+                },
+            },
+        }
+        logging.config.dictConfig(config)
 
     @classmethod
     def configure_structlog(cls, *, logfire: bool = False) -> None:

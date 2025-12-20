@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, pool
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.models import RecordModel
+from app.models import Model
 from app.settings import settings
 
 # configure local env setup
@@ -27,7 +27,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-target_metadata = RecordModel.metadata
+target_metadata = Model.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

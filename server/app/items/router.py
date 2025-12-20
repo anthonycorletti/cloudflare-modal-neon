@@ -2,9 +2,9 @@ from typing import List, Sequence
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 
-from app.items.schemas import ItemsCreate, ItemsUpdate
+from app.items.schemas import ItemsCreate, ItemsDB, ItemsUpdate
 from app.items.service import ItemsService
-from app.kit.postgres import AsyncSession, get_async_db_session
+from app.kit.db.postgres import AsyncSession, get_async_db_session
 from app.models import Items
 
 router = APIRouter(tags=["items"])
@@ -19,7 +19,7 @@ class Paths:
     delete_item = "/items/{item_name}"
 
 
-@router.get(Paths.list_items, response_model=List[Items])
+@router.get(Paths.list_items, response_model=List[ItemsDB])
 async def list_items(
     items_svc: ItemsService = Depends(ItemsService),
     db: AsyncSession = Depends(get_async_db_session),
@@ -28,7 +28,7 @@ async def list_items(
     return data
 
 
-@router.get(Paths.show_item, response_model=Items)
+@router.get(Paths.show_item, response_model=ItemsDB)
 async def show_item(
     item_name: str,
     items_svc: ItemsService = Depends(ItemsService),
@@ -40,7 +40,7 @@ async def show_item(
     return data
 
 
-@router.post(Paths.create_item, response_model=Items)
+@router.post(Paths.create_item, response_model=ItemsDB)
 async def create_item(
     items_create: ItemsCreate = Body(
         ..., example=ItemsCreate.Config.json_schema_extra["example"]
@@ -54,7 +54,7 @@ async def create_item(
     return data
 
 
-@router.put(Paths.update_item, response_model=Items)
+@router.put(Paths.update_item, response_model=ItemsDB)
 async def update_item(
     item_name: str,
     item_update: ItemsUpdate = Body(

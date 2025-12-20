@@ -31,7 +31,7 @@ async def test_list_items(client: AsyncClient, items_create: ItemsCreate) -> Non
     assert item["count"] == 1
     assert item["description"] is None
     assert item["created_at"] is not None
-    assert item["updated_at"] is not None
+    assert item["updated_at"] is None
     assert item["deleted_at"] is None
 
 
@@ -49,7 +49,7 @@ async def test_get_item(client: AsyncClient, items_create: ItemsCreate) -> None:
     assert item["count"] == 1
     assert item["description"] is None
     assert item["created_at"] is not None
-    assert item["updated_at"] is not None
+    assert item["updated_at"] is None
     assert item["deleted_at"] is None
 
 

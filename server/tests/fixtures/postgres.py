@@ -1,9 +1,9 @@
 from typing import AsyncGenerator
 
 import pytest_asyncio
-from sqlmodel import text
+from sqlalchemy import text
 
-from app.kit.postgres import create_async_engine
+from app.kit.db.postgres import create_async_engine
 from app.models import RecordModel
 
 

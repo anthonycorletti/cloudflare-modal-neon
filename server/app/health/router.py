@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from app import __version__
 from app.health.schemas import ReadinessCheck
-from app.kit.postgres import AsyncSession, get_async_db_session
+from app.kit.db.postgres import AsyncSession, get_async_db_session
 from app.kit.utils import utc_now
 
 router = APIRouter(tags=["health"])

@@ -4,7 +4,11 @@ import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from app.kit.postgres import AsyncSession, create_async_engine, get_async_db_session
+from app.kit.db.postgres import (
+    AsyncSession,
+    create_async_engine,
+    get_async_db_session,
+)
 from app.main import app as _app
 
 TEST_BASE_URL = "http://testserver:8001"

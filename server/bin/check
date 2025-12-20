@@ -1,4 +1,4 @@
 #!/bin/sh -e
 
-uv run mypy .
+uv run ty check
 uv run ruff check

@@ -11,7 +11,7 @@ from fastapi.routing import APIRoute
 
 from app import __version__
 from app._logfire import configure_logfire, instrument_fastapi, instrument_httpx
-from app.kit.postgres import (
+from app.kit.db.postgres import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
